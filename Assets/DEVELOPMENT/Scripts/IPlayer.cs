@@ -1,0 +1,42 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class IPlayer : MonoBehaviour
+{
+    private Transform root, holdingRoot, holdingPoint;
+    private Rigidbody holding;
+
+    private void Awake()
+    {
+        root = Camera.main.transform;
+        holdingRoot = transform.Find("Root");
+        holdingPoint = holdingRoot.Find("Hold");
+    }
+
+    private void Update()
+    {
+        holdingRoot.rotation = root.rotation;
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (holding)
+            {
+                holding.isKinematic = false;
+                holding = null;
+            }
+            else if (Physics.Raycast(root.position, root.forward, out RaycastHit hit, 3f, LayerMask.GetMask("Interact"))) 
+            {
+                if (hit.collider.TryGetComponent(out Rigidbody rb))
+                {
+                    holding = rb;
+                    holding.isKinematic = true;
+                }
+
+                if (hit.collider.TryGetComponent(out ILaser laser))
+                    laser.Rotate();
+            }
+        }
+
+        if (holding) holding.MovePosition(holdingPoint.position);
+    }
+}
